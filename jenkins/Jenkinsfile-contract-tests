@@ -10,14 +10,25 @@ pipeline {
   }
 
   environment {
+    PACT_BROKER_URL = "http://localhost:9292"
+    PACT_BROKER_USERNAME = "pb_username"
+    PACT_BROKER_PASSWORD = "pb_password"
     PACT_DOCKER_CLI = "sudo docker run \
-                           -e PACT_BROKER_BASE_URL='http://localhost:9292' \
-                           -e PACT_BROKER_USERNAME='pb_username' \
-                           -e PACT_BROKER_PASSWORD='pb_password' \
+                           -e PACT_BROKER_BASE_URL='${PACT_BROKER_URL}' \
+                           -e PACT_BROKER_USERNAME='${PACT_BROKER_USERNAME}' \
+                           -e PACT_BROKER_PASSWORD='${PACT_BROKER_PASSWORD}' \
                            --network host --rm pactfoundation/pact-cli:0.50.0.21 broker"
   }
 
   stages {
+    stage('Install requirements') {
+      steps {
+        sh 'sudo apt-get update'
+        sh 'sudo apt-get install python3.6'
+        sh 'sudo apt-get install python3-pip python-dev -y'
+        sh 'sudo pip install -r requirements.txt'
+      }
+    }
     stage('Get Latest Provider by Tag From Pact Broker') {
       steps {
         script {
@@ -34,8 +45,11 @@ pipeline {
 
     stage('Run Contract Tests') {
       steps {
-        sh "mvn clean verify -Dpactbroker.consumers=${params.pactConsumerName} -Dpactbroker.consumerversionselectors.tags=${params.pactConsumerTags} " +
-                "-Dpact.verifier.publishResults=true -Dpact.provider.version=${PROVIDER_VERSION} -Dpact.provider.tag=[C]${params.pactConsumerTags}"
+        sh "export PROVIDER_VERSION=${PROVIDER_VERSION} && \
+          export CONSUMER_TAG_SELECTOR=${params.pactConsumerTags} && \
+          export PROVIDER_TAG=[C]${params.pactConsumerTags} && \
+          export PACT_BROKER_URL=${PACT_BROKER_URL} && sudo pytest"
+        //${params.pactConsumerName}
       }
     }
   }
