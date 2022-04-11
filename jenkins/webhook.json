@@ -1,13 +1,13 @@
 {
   "consumer": {
-    "name": "consumer-a"
+    "name": "consumer-b"
   },
   "provider": {
-    "name": "provider-x"
+    "name": "provider-y"
   },
   "request": {
     "method": "POST",
-    "url": "http://127.0.0.1:8080/job/provider-x-run-contract-tests/buildWithParameters?pactConsumerTags=${pactbroker.consumerVersionTags}&pactConsumerName=${pactbroker.consumerName}",
+    "url": "http://127.0.0.1:8080/job/provider-y-run-contract-tests/buildWithParameters?pactConsumerTags=${pactbroker.consumerVersionTags}&pactConsumerName=${pactbroker.consumerName}",
     "headers": {
       "Accept": "application/json",
       "Authorization": "Basic c29ubmQ0OjExNWJhNzcyNjg0OGU5ZTJmZWYzZGU5MzdmODJkZDU2Mzg="
