@@ -31,10 +31,10 @@ pipeline {
     }
     stage ('Build & Test') {
       steps {
-        sh "PROVIDER_VERSION=${GIT_COMMIT} \
-          CONSUMER_TAG_SELECTOR=SIT_ENV \
-          PROVIDER_TAG=${BRANCH_NAME} \
-          PACT_BROKER_URL=${PACT_BROKER_URL} sudo pytest"
+        env.PROVIDER_VERSION=env.GIT_COMMIT
+        env.CONSUMER_TAG_SELECTOR="SIT_ENV"
+        env.PROVIDER_TAG=env.BRANCH_NAME
+        sh "sudo pytest"
       }
     }
     stage('[Pact] Version & Tag Init') {
