@@ -1,0 +1,21 @@
+{
+  "consumer": {
+    "name": "consumer-a"
+  },
+  "provider": {
+    "name": "provider-x"
+  },
+  "request": {
+    "method": "POST",
+    "url": "http://127.0.0.1:8080/job/provider-x-run-contract-tests/buildWithParameters?pactConsumerTags=${pactbroker.consumerVersionTags}&pactConsumerName=${pactbroker.consumerName}",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Basic c29ubmQ0OjExNWJhNzcyNjg0OGU5ZTJmZWYzZGU5MzdmODJkZDU2Mzg="
+    }
+  },
+  "events": [
+    {
+      "name": "contract_content_changed"
+    }
+  ]
+}

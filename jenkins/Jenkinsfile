@@ -1,0 +1,71 @@
+#!groovy
+pipeline {
+
+  agent any
+
+  parameters {
+    string(name: 'BRANCH', defaultValue: 'master', description: 'Branch to build')
+  }
+
+  environment {
+    SERVICE_NAME = "provider-y"
+    BRANCH_NAME = env.GIT_BRANCH.replace("origin/", "")
+    PACT_BROKER_URL = "http://localhost:9292"
+    PACT_BROKER_USERNAME = "pb_username"
+    PACT_BROKER_PASSWORD = "pb_password"
+    PACT_DOCKER_CLI = "sudo docker run \
+                           -e PACT_BROKER_BASE_URL='${PACT_BROKER_URL}' \
+                           -e PACT_BROKER_USERNAME='${PACT_BROKER_USERNAME}' \
+                           -e PACT_BROKER_PASSWORD='${PACT_BROKER_PASSWORD}' \
+                           --network host --rm pactfoundation/pact-cli:0.50.0.21 broker"
+  }
+
+  stages {
+    stage('Install requirements') {
+      steps {
+        sh 'sudo apt-get update'
+        sh 'sudo apt-get install python3.6'
+        sh 'sudo apt-get install python3-pip python-dev -y'
+        sh 'sudo pip install -r requirements.txt'
+      }
+    }
+    stage ('Build & Test') {
+      steps {
+        sh "export PROVIDER_VERSION=${GIT_COMMIT} && \
+          export CONSUMER_TAG_SELECTOR=SIT_ENV && \
+          export PROVIDER_TAG=${BRANCH_NAME} && \
+          export PACT_BROKER_URL=${PACT_BROKER_URL} && sudo pytest"
+      }
+    }
+    stage('[Pact] Version & Tag Init') {
+      steps {
+        script {
+          env.SIT_VERSION = sh(script: "${PACT_DOCKER_CLI} describe-version -a ${SERVICE_NAME} -l SIT_ENV | tail -1 | cut -f 1 -d \\|", returnStdout: true).trim()
+          echo "Latest verified SIT version: " + SIT_VERSION
+          if (env.SIT_VERSION == 'Pacticipant version not found' && env.BRANCH_NAME == 'master') {
+            sh "${PACT_DOCKER_CLI} create-or-update-pacticipant --name=${SERVICE_NAME} --main-branch=${BRANCH_NAME} --repository-url=${GIT_URL}"
+            sh "${PACT_DOCKER_CLI} create-version-tag -t SIT_ENV -a ${SERVICE_NAME} -e ${GIT_COMMIT}"
+          }
+        }
+      }
+    }
+    stage('Can I deploy on SIT') {
+      steps {
+        sh "${PACT_DOCKER_CLI} can-i-deploy -a ${SERVICE_NAME} -e ${GIT_COMMIT} --to SIT_ENV"
+      }
+    }
+    stage('Mark as verified on SIT') {
+      steps {
+        sh "${PACT_DOCKER_CLI} create-version-tag -a ${SERVICE_NAME} -e ${GIT_COMMIT} -t SIT_ENV"
+      }
+    }
+    stage('Deploy on SIT') {
+      when {
+        expression { return env.BRANCH_NAME == 'master'; }
+      }
+      steps {
+          sh "${PACT_DOCKER_CLI} record-deployment --environment=SIT -a ${SERVICE_NAME} -e ${GIT_COMMIT}"
+      }
+    }
+  }
+}

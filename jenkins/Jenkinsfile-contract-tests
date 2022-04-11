@@ -1,0 +1,42 @@
+#!groovy
+pipeline {
+
+  agent any
+
+  parameters {
+    string(name: 'pactConsumerName', defaultValue: '', description: 'Name of consumer to verify')
+    string(name: 'pactConsumerTags', defaultValue: 'master', description: 'Tags to verify')
+    string(name: 'PROVIDER_TAG', defaultValue: 'SIT_ENV', description: 'Tags to verify')
+  }
+
+  environment {
+    PACT_DOCKER_CLI = "sudo docker run \
+                           -e PACT_BROKER_BASE_URL='http://localhost:9292' \
+                           -e PACT_BROKER_USERNAME='pb_username' \
+                           -e PACT_BROKER_PASSWORD='pb_password' \
+                           --network host --rm pactfoundation/pact-cli:0.50.0.21 broker"
+  }
+
+  stages {
+    stage('Get Latest Provider by Tag From Pact Broker') {
+      steps {
+        script {
+          env.PROVIDER_VERSION = sh(script: "${PACT_DOCKER_CLI} describe-version -a provider-x -l ${PROVIDER_TAG} | tail -1 | cut -f 1 -d \\|", returnStdout: true).trim()
+        }
+        echo "Latest " + PROVIDER_TAG + " version: " + PROVIDER_VERSION
+      }
+    }
+    stage("Checkout Latest Provider (Tag)") {
+      steps {
+        sh "git checkout ${PROVIDER_VERSION}"
+      }
+    }
+
+    stage('Run Contract Tests') {
+      steps {
+        sh "mvn clean verify -Dpactbroker.consumers=${params.pactConsumerName} -Dpactbroker.consumerversionselectors.tags=${params.pactConsumerTags} " +
+                "-Dpact.verifier.publishResults=true -Dpact.provider.version=${PROVIDER_VERSION} -Dpact.provider.tag=[C]${params.pactConsumerTags}"
+      }
+    }
+  }
+}
