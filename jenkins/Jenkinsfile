@@ -35,7 +35,7 @@ pipeline {
           env.PROVIDER_VERSION="${GIT_COMMIT}"
           env.CONSUMER_TAG_SELECTOR="SIT_ENV"
           env.PROVIDER_TAG="${BRANCH_NAME}"
-          sh "export FOO=bar && FAAA=zzz && export FAAA sudo pytest"
+          sh "export FOO=bar && export GIT_COMMIT && sudo pytest"
         }
       }
     }
