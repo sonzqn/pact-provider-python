@@ -36,7 +36,7 @@ pipeline {
           env.CONSUMER_TAG_SELECTOR="SIT_ENV"
           env.PROVIDER_TAG="${BRANCH_NAME}"
           //sh ("printenv")
-          sh "pytest"
+          sh "pytest tests"
         }
       }
     }
