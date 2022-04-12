@@ -33,11 +33,11 @@ pipeline {
       steps {
         script {
           //sh ("printenv")
-          sh "sudo export PROVIDER_VERSION=${GIT_COMMIT} && \
+          sh "export PROVIDER_VERSION=${GIT_COMMIT} && \
               export CONSUMER_TAG_SELECTOR=SIT_ENV && \
               export PROVIDER_TAG=${BRANCH_NAME} && \
               export PACT_BROKER_URL=${PACT_BROKER_URL} && \
-              pytest tests"
+              sudo -E pytest tests"
         }
       }
     }
