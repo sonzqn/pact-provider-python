@@ -34,9 +34,9 @@ pipeline {
         script {
           //sh ("printenv")
           sh "sudo export PROVIDER_VERSION=${GIT_COMMIT} && \
-              CONSUMER_TAG_SELECTOR=SIT_ENV && \
-              PROVIDER_TAG=${BRANCH_NAME} && \
-              PACT_BROKER_URL=${PACT_BROKER_URL} && \
+              export CONSUMER_TAG_SELECTOR=SIT_ENV && \
+              export PROVIDER_TAG=${BRANCH_NAME} && \
+              export PACT_BROKER_URL=${PACT_BROKER_URL} && \
               pytest tests"
         }
       }
