@@ -66,7 +66,7 @@ def test_user_service_provider_against_broker(server, broker_opts):
     PROVIDER_PORT = os.getenv("PROVIDER_PORT")
     PROVIDER_URL = f"http://{PROVIDER_HOST}:{PROVIDER_PORT}"
     verifier = Verifier(
-        provider="provider-y",
+        provider="provider-python",
         provider_base_url=PROVIDER_URL
     )
 

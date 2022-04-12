@@ -8,7 +8,7 @@ pipeline {
   }
 
   environment {
-    SERVICE_NAME = "provider-y"
+    SERVICE_NAME = "provider-python"
     BRANCH_NAME = env.GIT_BRANCH.replace("origin/", "")
     PACT_BROKER_URL = "http://localhost:9292"
     PACT_BROKER_USERNAME = "pb_username"
