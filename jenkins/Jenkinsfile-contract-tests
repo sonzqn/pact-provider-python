@@ -45,11 +45,12 @@ pipeline {
 
     stage('Run Contract Tests') {
       steps {
-        env.PROVIDER_VERSION="${PROVIDER_VERSION}"
-        env.CONSUMER_TAG_SELECTOR=${params.pactConsumerTags}
-        env.PROVIDER_TAG="[C]${params.pactConsumerTags}"
         //${params.pactConsumerName}
-        sh "pytest tests"
+        sh "export PROVIDER_VERSION=${PROVIDER_VERSION} && \
+              export CONSUMER_TAG_SELECTOR=${params.pactConsumerTags} && \
+              export PROVIDER_TAG=[C]${params.pactConsumerTags} && \
+              export PACT_BROKER_URL=${PACT_BROKER_URL} && \
+              sudo -E pytest tests"
       }
     }
   }
