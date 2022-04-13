@@ -10,6 +10,7 @@ pipeline {
   }
 
   environment {
+    SERVICE_NAME = "provider-python"
     PACT_BROKER_URL = "http://localhost:9292"
     PACT_BROKER_USERNAME = "pb_username"
     PACT_BROKER_PASSWORD = "pb_password"
@@ -32,7 +33,7 @@ pipeline {
     stage('Get Latest Provider by Tag From Pact Broker') {
       steps {
         script {
-          env.PROVIDER_VERSION = sh(script: "${PACT_DOCKER_CLI} describe-version -a provider-x -l ${PROVIDER_TAG} | tail -1 | cut -f 1 -d \\|", returnStdout: true).trim()
+          env.PROVIDER_VERSION = sh(script: "${PACT_DOCKER_CLI} describe-version -a ${SERVICE_NAME} -l ${PROVIDER_TAG} | tail -1 | cut -f 1 -d \\|", returnStdout: true).trim()
         }
         echo "Latest " + PROVIDER_TAG + " version: " + PROVIDER_VERSION
       }
